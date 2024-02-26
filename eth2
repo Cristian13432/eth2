@@ -1,0 +1,30 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract CurveBondingSale {
+    address public owner;
+    uint256 public tokenPrice;
+    mapping(address => uint256) public balances;
+
+    event TokensPurchased(address indexed buyer, uint256 amount, uint256 cost);
+
+    constructor(uint256 _initialTokenPrice) {
+        owner = msg.sender;
+        tokenPrice = _initialTokenPrice;
+    }
+
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Only owner can call this function");
+        _;
+    }
+
+    function purchaseTokens(uint256 _tokenAmount) external payable {
+        require(msg.value >= _tokenAmount * tokenPrice, "Insufficient funds");
+        balances[msg.sender] += _tokenAmount;
+        emit TokensPurchased(msg.sender, _tokenAmount, msg.value);
+    }
+
+    function withdraw() external onlyOwner {
+        payable(owner).transfer(address(this).balance);
+    }
+}
